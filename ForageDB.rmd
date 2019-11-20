@@ -3,6 +3,8 @@ title: "ForageDB"
 author: "Tania Barychka"
 date: "19/11/2019"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 This is dedicated to explorative analysis of the FoRAGE dataset by Uiterwaal et al 2018 https://www.researchgate.net/publication/329938560_Data_paper_FoRAGE_Functional_Responses_from_Around_the_Globe_in_all_Ecosystems_database_a_compilation_of_functional_responses_for_consumers_and_parasitoids.
@@ -19,7 +21,16 @@ Import data and summarise the explanatory variables.
 ```{r echo=FALSE}
 
 forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+forage_db<-forage_db[-c(2084:2682),]
+
 
 summary(forage_db)
+#head(forage_db)
+
+#table(forage_db$Vert.invert)
+#table(forage_db$Habitat)
+table(forage_db$Vert.invert, forage_db$Major.grouping.1)
+
+#ggplot(forage_db, aes(Vert.invert[forage_db$Vert.invert=="Vertebrate"], ))
 
 ```
