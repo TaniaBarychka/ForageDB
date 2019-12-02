@@ -20,7 +20,16 @@ Import data and summarise the explanatory variables.
 
 ```{r echo=FALSE}
 
+
+#work
 forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+
+
+#home
+forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+
+head(forage_db)
+
 forage_db<-forage_db[-c(2084:2682),]
 
 
@@ -32,5 +41,52 @@ summary(forage_db)
 table(forage_db$Vert.invert, forage_db$Major.grouping.1)
 
 #ggplot(forage_db, aes(Vert.invert[forage_db$Vert.invert=="Vertebrate"], ))
+
+```
+
+
+Let's have a look at the data.
+
+```{r echo=FALSE}
+
+ggplot(forage_db, aes(Vert.invert))+geom_histogram(stat="count")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+fit_bodyMass<-lm(log10(forage_db$Predator.mass..mg.)~log10(forage_db$Prey.mass..mg.))
+summary(fit_bodyMass)
+
+bm<-ggplot(forage_db, aes(log10(Prey.mass..mg.),log10(Predator.mass..mg.), col=Vert.invert))+geom_point()+geom_abline(slope =  0.74612, intercept =  1.74694,col="red")+ggtitle("Predator vs Prey Body mass")
+
+bm+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+ylab("Log 10 Predator Mass, mg")+xlab("Log10 Prey mass, mg")
+
+ggplot(forage_db, aes(Mean.R2.of.fits))+geom_histogram(stat="bin", binwidth = 0.05)+geom_vline(xintercept=mean(forage_db$Mean.R2.of.fits), col="red")+geom_vline(xintercept=median(forage_db$Mean.R2.of.fits), col="blue")+ggtitle("Mean R2 of bootstrapped fits")+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+
+#Look at attck rate fits with body mass
+aFits_PredBM<-ggplot(forage_db, aes(log10(Predator.mass..mg.),log10(Fitted.a..median.of.BS.samples.), col=Vert.invert))+geom_point()
+
+aFits_PredBM+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Log 10 Predator Mass, mg")+ylab("Log10 Fitted attack rate median of bootstapped samples")+ggtitle("Fitted attack rate values with Predator mass")
+
+aFits_PreyBM<-ggplot(forage_db, aes(log10(Prey.mass..mg.),log10(Fitted.a..median.of.BS.samples.), col=Vert.invert))+geom_point()
+
+aFits_PreyBM+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Log 10 Prey Mass, mg")+ylab("Log10 Fitted attack rate median of bootstapped samples")+ggtitle("Fitted attack rate values with Prey mass")
+
+
+#Look at handling time fits with body mass
+hFits_PredBM<-ggplot(forage_db, aes(log10(Predator.mass..mg.),log10(Fittted.h..day.), col=Vert.invert))+geom_point()
+
+hFits_PredBM+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Log 10 Predator Mass, mg")+ylab("Log10 Fitted handling time")+ggtitle("Fitted handling time with Predator mass")
+
+hFits_PreyBM<-ggplot(forage_db, aes(log10(Prey.mass..mg.),log10(Fittted.h..day.), col=Vert.invert))+geom_point()
+
+hFits_PreyBM+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Log 10 Prey Mass, mg")+ylab("Log10 Fitted handling time")+ggtitle("Fitted handling time with Prey mass")
+
+
 
 ```
