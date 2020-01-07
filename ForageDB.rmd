@@ -12,7 +12,9 @@ This is dedicated to explorative analysis of the FoRAGE dataset by Uiterwaal et 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 
 library (ggplot2)
-
+library(dplyr)          # for data manipulation
+library(tidyr)          # for data shaping
+library(ggpubr)
 
 ```
 
@@ -91,14 +93,65 @@ hFits_PreyBM<-ggplot(forage_db, aes(log10(Prey.mass..mg.),log10(Fittted.h..day.)
 hFits_PreyBM+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Log 10 Prey Mass, mg")+ylab("Log10 Fitted handling time")+ggtitle("Fitted handling time with Prey mass")
 
-
+which(forage_db$Vert.invert=="Angiosperm")
 
 ```
 
 Data Exploration - 07/01/2020
+--
+
+Following Zuur, Ieno and Elphick (2010) in MEE.
 
 X = Predator Body Mass; Prey Body Mass and Temperature
 Y1: Attack Rates
 Y2: Handling Time
 
+1. Check for **outliers** in X and Y:
 
+```{r echo=FALSE}
+
+par(mfrow=c(1,2))
+#Fitted Attack Rates
+boxplot(forage_db$Fitted.a..median.of.BS.samples., ylab="Fitted attack rates")
+dotchart(forage_db$Fitted.a..median.of.BS.samples., ylab="Order of the data")
+par(mfrow=c(1,1))
+ggplot(forage_db[forage_db$Vert.invert!="",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+
+#ggplot(forage_db, aes(Fitted.a..median.of.BS.samples.))+geom_point()
+
+which(forage_db$Fitted.a..median.of.BS.samples.>100000000)
+
+```
+
+There is one very serious outlier that is so far out that I can't see the trends in the data. The estimate of attack rate is based on raw data of lynx preying on roe deer.
+Without the large outlier:
+
+```{r}
+
+par(mfrow=c(1,2))
+#Fitted Attack Rates
+boxplot(forage_db$Fitted.a..median.of.BS.samples.[which(forage_db$Fitted.a..median.of.BS.samples.<1000000000)], ylab="Fitted attack rates", main ="Removed the largest outlier")
+dotchart(forage_db$Fitted.a..median.of.BS.samples.[which(forage_db$Fitted.a..median.of.BS.samples.<1000000000)], ylab="Order of the data")
+
+par(mfrow=c(1,1))
+ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert!="Vertebrate" & forage_db$Vert.invert!="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate" | forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+which(forage_db$Fitted.a..median.of.BS.samples.>3000  & forage_db$Vert.invert=="Invertebrate")
+```
+
+Some issues with outliers that will need to be investigated.
+
+I'm going to group Angiosperm, Invertebrate, Vertebrate and Protozoan together.
+
+
+```{r}
+
+
+
+```
