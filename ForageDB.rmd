@@ -26,10 +26,10 @@ Import data and summarise the explanatory variables.
 
 
 #home
-#forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 #laptop
-forage_db<- read.csv("C:/Users/Tania/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+#forage_db<- read.csv("C:/Users/Tania/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 
 head(forage_db)
@@ -94,3 +94,11 @@ panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),s
 
 
 ```
+
+Data Exploration - 07/01/2020
+
+X = Predator Body Mass; Prey Body Mass and Temperature
+Y1: Attack Rates
+Y2: Handling Time
+
+
