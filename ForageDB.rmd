@@ -15,7 +15,7 @@ library (ggplot2)
 library(dplyr)          # for data manipulation
 library(tidyr)          # for data shaping
 library(ggpubr)
-
+library(gridExtra)
 ```
 
 Import data and summarise the explanatory variables.
@@ -106,9 +106,12 @@ X = Predator Body Mass; Prey Body Mass and Temperature
 Y1: Attack Rates
 Y2: Handling Time
 
-1. Check for **outliers** in X and Y:
+1. Outliers in X and Y:
+--
 
-```{r echo=FALSE}
+**1.1 Outliers in Response Variables: Attack Rates**
+
+```{r echo=FALSE,fig.height=7, fig.width=10}
 
 par(mfrow=c(1,2))
 #Fitted Attack Rates
@@ -116,42 +119,301 @@ boxplot(forage_db$Fitted.a..median.of.BS.samples., ylab="Fitted attack rates")
 dotchart(forage_db$Fitted.a..median.of.BS.samples., ylab="Order of the data")
 par(mfrow=c(1,1))
 ggplot(forage_db[forage_db$Vert.invert!="",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
-panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
 
 
 #ggplot(forage_db, aes(Fitted.a..median.of.BS.samples.))+geom_point()
 
 which(forage_db$Fitted.a..median.of.BS.samples.>100000000)
 
+
 ```
 
-There is one very serious outlier that is so far out that I can't see the trends in the data. The estimate of attack rate is based on raw data of lynx preying on roe deer.
+There is one very serious outlier in the attack rates. This estimate of attack rate is based on raw data of lynx preying on roe deer.
 Without the large outlier:
 
-```{r echo=FALSE}
+```{r echo=FALSE,fig.height=7, fig.width=10}
 
 par(mfrow=c(1,2))
 #Fitted Attack Rates
 boxplot(forage_db$Fitted.a..median.of.BS.samples.[which(forage_db$Fitted.a..median.of.BS.samples.<1000000000)], ylab="Fitted attack rates", main ="Removed the largest outlier")
 dotchart(forage_db$Fitted.a..median.of.BS.samples.[which(forage_db$Fitted.a..median.of.BS.samples.<1000000000)], ylab="Order of the data")
 
-par(mfrow=c(1,1))
-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert!="Vertebrate" & forage_db$Vert.invert!="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
-panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+ggtitle("Grouped:")
 
-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate" | forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
-panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+a1<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert!="Vertebrate" & forage_db$Vert.invert!="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+ggtitle("Grouped:")+theme(axis.title.x=element_blank())
+
+a2<- ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate" | forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Fitted.a..median.of.BS.samples.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+grid.arrange(a1,a2, ncol=2)
 
 which(forage_db$Fitted.a..median.of.BS.samples.>3000  & forage_db$Vert.invert=="Invertebrate")
 ```
 
-Some issues with outliers that will need to be investigated.
+**1.2 Handling times**
+
+```{r echo=FALSE,fig.height=7, fig.width=10}
+
+#Fitted handling times
+par(mfrow=c(1,2))
+boxplot(forage_db$Fittted.h..day., ylab="Fitted handling times (day)")
+
+dotchart(forage_db$Fittted.h..day., ylab="Order of the data")
+
+ggplot(forage_db[forage_db$Vert.invert!="",],aes( Vert.invert,Fittted.h..day.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+```
 
 
 
+```{r echo=FALSE, fig.height=7, fig.width=10}
+
+
+h1<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert!="Vertebrate" & forage_db$Vert.invert!="Invertebrate",],aes( Vert.invert, Fittted.h..day.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+ggtitle("Grouped:")+theme(axis.title.x=element_blank())
+
+h2<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate" | forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Fittted.h..day.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+grid.arrange(h1,h2, ncol=2)
+
+```
+
+Some large outliers, particularly  in **the vertebrates' handling times and attack rates**.
+
+Zuur et al. (2010) recommends care when dealing with outliers in the response variable, especially when they represent genuine variation in the responses. Here, our responses are fitted attack rates of bootstrapped samples and fitted handling times. 
+
+One option for dealing with outliers in the response is to transform. However, Zuur et al. recommends choosing a statistical method that uses a probability distribution that allows greater variation for larger mean values, e.g. gamma for continuous data and Poisson or negative binomial for count data.
+
+**1.3 Outliers in Covariates: Predator** 
+
+
+
+```{r echo=FALSE}
+
+#Adult body masses
+#Predator
+
+#Fitted handling times
+par(mfrow=c(1,2))
+boxplot(forage_db$Predator.mass..mg., ylab="Predator mass (mg)")
+
+dotchart(forage_db$Predator.mass..mg., ylab="Order of the data")
+
+#ggplot(forage_db[forage_db$Vert.invert!="",],aes( Vert.invert,Predator.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+#panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+
+```
+
+
+```{r echo=FALSE, fig.height=7, fig.width=10}
+
+predBM1<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Angiosperm",],aes( Vert.invert, Predator.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+ggtitle("Grouped:")+theme(axis.title.x=element_blank())
+
+
+
+predBM2<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Protozoan",],aes( Vert.invert, Predator.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),axis.title.x=element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+predBM3<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Predator.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),axis.title.x=element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+                                                                                                                                                                                                                                      
+predBM4<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate",],aes( Vert.invert, Predator.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),axis.title.x=element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+grid.arrange(predBM1,predBM2, predBM3,predBM4, ncol=2)
+
+#THe largest outliers in vert
+which(forage_db$Predator.mass..mg.>100000000  & forage_db$Vert.invert=="Vertebrate")
+
+```
+
+We have 7 vertebrate predators above 100kg in size.
+
+**1.4 Prey body masses** 
+
+```{r echo=FALSE}
+
+#Adult body masses
+#Prey
+
+#Fitted handling times
+par(mfrow=c(1,2))
+boxplot(forage_db$Prey.mass..mg., ylab="Prey mass (mg)")
+
+dotchart(forage_db$Prey.mass..mg., ylab="Order of the data")
+
+#ggplot(forage_db[forage_db$Vert.invert!="",],aes( Vert.invert,Prey.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+#panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+
+```
+
+
+```{r echo=FALSE, fig.height=7, fig.width=10}
+
+preyBM1<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Angiosperm",],aes( Vert.invert, Prey.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+ggtitle("Grouped:")+theme(axis.title.x=element_blank())
+
+preyBM2<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Protozoan",],aes( Vert.invert, Prey.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+preyBM3<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Invertebrate",],aes( Vert.invert, Prey.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+                                                                                                                                                                                                                                      
+preyBM4<-ggplot(forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert=="Vertebrate",],aes( Vert.invert, Prey.mass..mg.))+geom_boxplot()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")+theme(axis.title.x=element_blank())
+
+grid.arrange(preyBM1,preyBM2, preyBM3,preyBM4, ncol=2)
+
+
+#THe largest outliers in vert
+#which(forage_db$Predator.mass..mg.>100000000  & forage_db$Vert.invert=="Vertebrate")
+
+```
+
+
+OUtliers in all covariates except for angiosperms. Zuur et al (2010) recommend transforming covariates; observer or measurement error justify dropping values.
+
+**1.5 Temperature**
+
+```{r echo=FALSE}
+
+par(mfrow=c(1,2))
+boxplot(forage_db$Temp..C.., ylab="Temp (c)")
+
+dotchart(forage_db$Temp..C.., ylab="Order of the data")
+
+
+```
+
+Temperature data looks comparatively outlier-free - yay!
+
+*Note: B.Rosenbaum recommended fitting temperature categorically as likely non-linear.*
+
+2 and 3. Homogeneity of variance and Normality- verified using the residuals produced by the model (in linear regression)-  **TBC**
+--
 
 ```{r}
 
 
 
 ```
+
+
+
+
+4. Zeros in the data?
+--
+
+Frequency of zeros 
+
+```{r echo=FALSE, fig.height=7, fig.width=10}
+
+fr_h<-ggplot(forage_db, aes(Fittted.h..day.))+geom_histogram(binwidth =1 )+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+fr_a<-ggplot(forage_db, aes(Fitted.a..median.of.BS.samples.))+geom_histogram()+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme_bw(base_size = 13, base_family = "")
+
+
+grid.arrange(fr_a, fr_h)
+
+
+r_a<-range(forage_db$Fitted.a..median.of.BS.samples.)
+r_h<-range(forage_db$Fittted.h..day.)
+
+which(forage_db$Fittted.h..day.==0)
+which(forage_db$Fitted.a..median.of.BS.samples.==0)
+
+```
+
+There are a lot of small values: range for attack rate is `r r_a` and handling time `r r_h`. However, there are no zero responses (unsurprisingly).
+
+5. Collinearity between covariates.
+--
+
+Collinearity is defined as existence of correlation between covariates. From reviewing the plot of prey vs predator bodymass (above) we know that these are highly and significantly correlated.
+
+If collinearity is ignored, we may  end with the analysis  where nothing is significant but removing one variable would make others significant (zuur et al. 2010).
+
+
+```{r echo=FALSE,warning=FALSE, message=FALSE}
+
+#head(forage_db)
+pairs(log10(forage_db[,c(24,29,32)]), pcs=19, cex=1, col=forage_db$Vert.invert)
+
+corBM<-cor.test(forage_db$Predator.mass..mg., forage_db$Prey.mass..mg.)
+
+corBM
+```
+
+Strangely, correlation value is low - does not look like a right test.
+
+6. Relationships between y and x variables.
+---
+
+I've looked at handling time and attack rate with body masses above but have not looked at the temperature yet.
+
+
+```{r echo=FALSE, fig.height=10, fig.width=10}
+a_Temp<-ggplot(forage_db, aes(Temp..C..,log10(Fitted.a..median.of.BS.samples.), col=Vert.invert))+geom_point()
+
+a_Temp<-a_Temp+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Temp C")+ylab("Log10 Fitted attack rate median of bootstapped samples")+ggtitle("Fitted attack rate values with Temp")
+
+h_Temp<-ggplot(forage_db, aes(Temp..C..,log10(Fittted.h..day.), col=Vert.invert))+geom_point()
+
+h_Temp<-h_Temp+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+xlab("Temp C")+ylab("Log10 Fitted handling times (day)")+ggtitle("Fitted handling times with Temp")
+
+grid.arrange(a_Temp, h_Temp)
+
+```
+
+7. Consider interactions?
+---
+
+7.1 Coplot of Prey body mass given Temp on attack rate:
+
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..,data=forage_db, panel = panel.smooth)
+
+```
+
+
+7.2 Coplot of Prey body mass given Temp on handling time:
+
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+
+7.3 Coplot of Predator body mass given Temp on attack rate:
+
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+
+7.4 Coplot of Predator body mass given Temp on handling time:
+
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+8. Are observations of the response variable independent?
+--
+
+Not sure we need to check this as our response values are fitted. Ask Tim.
