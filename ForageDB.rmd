@@ -380,7 +380,7 @@ vifDF<-corvif(df[,c(-3,-4,-5)])
 
 ```
 
-Correlation between body masses is `r corDF`. Vif values are under 3 with 3 being a threshold suggested by Zuur et al 2009.I'll keep all the variables in the analysis for the timebeing.
+Correlation between body masses appears high. Vif values are under 3 with 3 being a threshold suggested by Zuur et al 2009.I'll keep all the variables in the analysis for the timebeing.
 
 
 
@@ -433,9 +433,6 @@ xyplot(log10(df_no$Fitted.a..median.of.BS.samples.)~log10(df_no$Prey.mass..mg.)|
 
 
 
-
-
-
 ```
 
 7. Consider interactions?
@@ -475,6 +472,16 @@ coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..
 ```{r fig.height=7, fig.width=10}
 
 coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+
+There does not appear to be signifcant interactions with temperature (lines ar parallel). I'll try grouping by vert/invert.
+
+
+```{r echo=FALSE,fig.height=7, fig.width=10}
+
+coplot(log10(df_no$Fitted.a..median.of.BS.samples.) ~ log10(df_no$Prey.mass..mg.)|df_no$Temp..C..*df_no$Vert.invert, panel = panel.smooth)
 
 ```
 
