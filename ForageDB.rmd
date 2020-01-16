@@ -16,6 +16,10 @@ library(dplyr)          # for data manipulation
 library(tidyr)          # for data shaping
 library(ggpubr)
 library(gridExtra)
+library(car)
+library(lattice)
+#work desktop
+source("C:/Users/Tania Barychka/OneDrive/Desktop/HighstatLibV10.R")
 ```
 
 Import data and summarise the explanatory variables.
@@ -24,11 +28,11 @@ Import data and summarise the explanatory variables.
 
 
 #work
-#forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 
 #home
-forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+#forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 #laptop
 #forage_db<- read.csv("C:/Users/Tania/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
@@ -342,17 +346,43 @@ Collinearity is defined as existence of correlation between covariates. From rev
 If collinearity is ignored, we may  end with the analysis  where nothing is significant but removing one variable would make others significant (zuur et al. 2010).
 
 
+I'm going to log masses and fitted attack rates and handling times.
+
 ```{r echo=FALSE,warning=FALSE, message=FALSE}
+#log body masses, handling time and attack rate
 
-#head(forage_db)
-pairs(log10(forage_db[,c(24,29,32)]), pcs=19, cex=1, col=forage_db$Vert.invert)
+forage_db$L.PredBM<-log10(forage_db$Predator.mass..mg.)
+forage_db$L.PreyBM<-log10(forage_db$Prey.mass..mg.)
+forage_db$L.Fitted.a..median.of.BS.samples.<-log10(forage_db$Fitted.a..median.of.BS.samples.)
+forage_db$L.Fittted.h..day.<-log10(forage_db$Fittted.h..day.)
 
-corBM<-cor.test(forage_db$Predator.mass..mg., forage_db$Prey.mass..mg.)
+df<-cbind(forage_db$L.PredBM, forage_db$L.PreyBM, forage_db$L.Fitted.a..median.of.BS.samples., forage_db$L.Fittted.h..day., forage_db$Temp..C..)
 
-corBM
+colnames(df)<-c("LogPredBM", "LogPreyBM", "LogFittedAR", "LogFittedH", "Temp, c")
+
+pairs(df, panel = panel.smooth)
+pairs(df, panel = panel.smooth, pcs=19, cex=1, col=forage_db$Vert.invert)
+
+df<-as.data.frame(df)
+
+#correlation test
+corDF<-cor.test(df$LogPredBM, df$LogPreyBM)
+corDF
+
+#The variance inflation factor (VIF) quantifies the extent of correlation between one predictor and the other predictors in a model. It is used for diagnosing collinearity/multicollinearity. Higher values signify that it is difficult to impossible to assess accurately the contribution of predictors to a model.
+
+vifDF<-corvif(df[,c(-3,-4,-5)])
+
+#corBM<-cor.test(forage_db$Predator.mass..mg., forage_db$Prey.mass..mg.)
+
+#vif values (variance inflation factors)
+#corvif(lm(LogFittedAR~LogPredBM+LogPreyBM, data=df))
+
 ```
 
-Strangely, correlation value is low - does not look like a right test.
+Correlation between body masses is `r corDF`. Vif values are under 3 with 3 being a threshold suggested by Zuur et al 2009.I'll keep all the variables in the analysis for the timebeing.
+
+
 
 6. Relationships between y and x variables.
 ---
@@ -375,12 +405,47 @@ grid.arrange(a_Temp, h_Temp)
 
 ```
 
+There seem to be clear correlation between fitted attack rates and prey and predator body mass. The relationship with handling time is much less clear. I'll try and group by vert/invert.
+
+```{r echo=FALSE,fig.height=7, fig.width=10}
+
+#remove nas and angiosperms
+
+df_no<-forage_db[forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",]
+
+panel.smoother <- function(x, y) {
+  panel.xyplot(x, y) # show points
+  panel.loess(x, y)  # show smoothed line
+}
+xyplot(log10(df_no$Fittted.h..day.)~log10(df_no$Predator.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 Predator mass, mg")
+
+
+xyplot(log10(df_no$Fittted.h..day.)~log10(df_no$Prey.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 Prey mass, mg")
+
+xyplot(log10(df_no$Fitted.a..median.of.BS.samples.)~log10(df_no$Predator.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted attack rates", xlab="Log 10 Predator mass, mg")
+
+
+xyplot(log10(df_no$Fitted.a..median.of.BS.samples.)~log10(df_no$Prey.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted attack rates", xlab="Log 10 Prey mass, mg")
+
+
+
+
+
+
+```
+
 7. Consider interactions?
 ---
 
 7.1 Coplot of Prey body mass given Temp on attack rate:
 
 ```{r fig.height=7, fig.width=10}
+
+
 
 coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..,data=forage_db, panel = panel.smooth)
 
