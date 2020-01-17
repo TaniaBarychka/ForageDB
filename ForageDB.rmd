@@ -435,6 +435,24 @@ xyplot(log10(df_no$Fitted.a..median.of.BS.samples.)~log10(df_no$Prey.mass..mg.)|
 
 ```
 
+What if I look at the relationship with prey/predator?
+
+```{r ehcho=FALSE,fig.height=7, fig.width=10}
+xyplot(log10(df_no$Fittted.h..day.)~log10(df_no$Prey.mass..mg./df_no$Predator.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 (Prey/Predator mass, mg)")
+
+#xyplot(log10(df_no$Fittted.h..day.)~log10(df_no$Predator.mass..mg./df_no$Prey.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+ #  panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 (Predator/Prey mass, mg)")
+
+xyplot(log10(df_no$Fitted.a..median.of.BS.samples.)~log10(df_no$Prey.mass..mg./df_no$Predator.mass..mg.)|df_no$Vert.invert,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted attack rates", xlab="Log 10 (Prey/Predator mass, mg)")
+
+
+```
+
+
+There seems to be an improvement in terms of the relationship and the direction of slope for handling time when fitted as a function of Prey/Predator mass.
+
 7. Consider interactions?
 ---
 
@@ -466,6 +484,13 @@ coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..
 
 ```
 
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+
 
 7.4 Coplot of Predator body mass given Temp on handling time:
 
@@ -475,8 +500,17 @@ coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..,data=forage_
 
 ```
 
+7.5 Coplot of handling time with Prey/Predator body mass:
 
-There does not appear to be signifcant interactions with temperature (lines ar parallel). I'll try grouping by vert/invert.
+```{r fig.height=7, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..,data=forage_db,panel = panel.smooth)
+
+```
+
+
+
+There does not appear to be significant interactions with temperature (lines are parallel). I'll try grouping by vert/invert.
 
 
 ```{r echo=FALSE,fig.height=10, fig.width=10}
@@ -497,6 +531,13 @@ coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg.)|Temp..C..*Vert.invert,data
 
 ```{r echo=FALSE,fig.height=10, fig.width=10}
 
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
 coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
 
 
@@ -504,8 +545,14 @@ coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..
 
 ```{r echo=FALSE,fig.height=10, fig.width=10}
 
-coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
 
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
 
 ```
 
