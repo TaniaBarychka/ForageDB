@@ -348,7 +348,7 @@ If collinearity is ignored, we may  end with the analysis  where nothing is sign
 
 I'm going to log masses and fitted attack rates and handling times.
 
-```{r echo=FALSE,warning=FALSE, message=FALSE}
+```{r echo=FALSE,warning=FALSE, message=FALSE,fig.height=10, fig.width=10}
 #log body masses, handling time and attack rate
 
 forage_db$L.PredBM<-log10(forage_db$Predator.mass..mg.)
@@ -360,7 +360,7 @@ df<-cbind(forage_db$L.PredBM, forage_db$L.PreyBM, forage_db$L.Fitted.a..median.o
 
 colnames(df)<-c("LogPredBM", "LogPreyBM", "LogFittedAR", "LogFittedH", "Temp, c")
 
-pairs(df, panel = panel.smooth)
+#pairs(df, panel = panel.smooth)
 pairs(df, panel = panel.smooth, pcs=19, cex=1, col=forage_db$Vert.invert)
 
 df<-as.data.frame(df)
@@ -479,13 +479,41 @@ coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..,data=forage_
 There does not appear to be signifcant interactions with temperature (lines ar parallel). I'll try grouping by vert/invert.
 
 
-```{r echo=FALSE,fig.height=7, fig.width=10}
+```{r echo=FALSE,fig.height=10, fig.width=10}
 
-coplot(log10(df_no$Fitted.a..median.of.BS.samples.) ~ log10(df_no$Prey.mass..mg.)|df_no$Temp..C..*df_no$Vert.invert, panel = panel.smooth)
+coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+
+#coplot(log10(df_no$Fitted.a..median.of.BS.samples.) ~ log10(df_no$Prey.mass..mg.)|df_no$Temp..C..*df_no$Vert.invert, panel = panel.smooth)
 
 ```
+
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..*Vert.invert,data=forage_db [forage_db$Vert.invert!="" & forage_db$Vert.invert!="Angiosperm",],panel = panel.smooth)
+
+
+```
+
+Potentially, some significant interactions for handling times ( different slopes for groups) particularly for protozoans. But protozoan sample is relatively small.For the attack rates, protozoan slopes are slightly steeper but again samples are comparatively small. 
 
 8. Are observations of the response variable independent?
 --
 
 Not sure we need to check this as our response values are fitted. Ask Tim.
+
+
