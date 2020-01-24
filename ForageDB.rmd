@@ -19,7 +19,15 @@ library(gridExtra)
 library(car)
 library(lattice)
 #work desktop
-source("C:/Users/Tania Barychka/OneDrive/Desktop/HighstatLibV10.R")
+#source("C:/Users/Tania Barychka/OneDrive/Desktop/HighstatLibV10.R")
+
+#home
+source("C:/Users/Etherian/OneDrive/Desktop/HighstatLibV10.R")
+
+# Create customized color palette
+library(RColorBrewer)
+mycol = c(brewer.pal(name="Dark2", n = 8), brewer.pal(name="Paired", n = 6))
+
 ```
 
 Import data and summarise the explanatory variables.
@@ -28,11 +36,11 @@ Import data and summarise the explanatory variables.
 
 
 #work
-forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+#forage_db<- read.csv("C:/Users/Tania Barychka/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 
 #home
-#forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
+forage_db<- read.csv("C:/Users/Etherian/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
 
 #laptop
 #forage_db<- read.csv("C:/Users/Tania/OneDrive/Documents/Madingley Postdoc/resource_map_doi_10_5063_F17H1GTQ/data/FoRAGE_db_12_19_18_data_set.csv")
@@ -564,3 +572,179 @@ Potentially, some significant interactions for handling times ( different slopes
 Not sure we need to check this as our response values are fitted. Ask Tim.
 
 
+
+Ecto- and Endotherm Grouping
+---
+
+It is possible that the relationships exist withing endo- and ectotherms' groups rather than with vert vs invert.This will also be handy becasue we would like to parameterise endo- and ectortherms differently in the Madingley. 
+
+Unfortumately, FoRAGE databse does not distinguish between endo and ectotherms. We know that:
+
+- Invertebrates (*n*=1520) are *ecothermic*
+
+- Vertebrates (*n*= 470) can be either. Examples of ectothermic vertebrates are snales, reptiles, fish
+
+- Angiosperms (*n* = 2) we can remove.
+
+- Protozoans (*n*= 91) can also remove as likely not represented in the model. [Single-cell eukoryotes, ~0.01-0.05 mm in size thoygh up to 0.5 mm are faily common]
+
+Let's have a look at the composition of our sample.
+
+```{r }
+
+mg1<-ggplot(forage_db, aes(Major.grouping.1))+geom_histogram(stat="count")
+
+
+mg1+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+ theme(axis.text.x = element_text(angle = 90))+theme(axis.title.x=element_blank())
+
+
+#Share of groups 1 subgroups in invertebrates
+
+invertGr1<-ggplot(forage_db [forage_db$Vert.invert!="Angiosperm" & forage_db$Vert.invert!="Protozoan",], aes(Vert.invert))+geom_bar(aes(fill=Major.grouping.1))
+invertGr1+theme_bw(base_size = 13, base_family = "")+ theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),strip.background = element_rect(colour="white", fill="white"), strip.text.x = element_text(size = 14), legend.position = "bottom", legend.title=element_blank())+theme(axis.title.x=element_blank())+scale_fill_manual(values=mycol)
+
+#Share of group 1 in vertebrates
+
+db_vertInvert<-forage_db[forage_db$Vert.invert!="Angiosperm" & forage_db$Vert.invert!="Protozoan",]
+#which(db_vertInvert$Vert.invert=="Protozoan")
+table( db_vertInvert$Major.grouping.1,db_vertInvert$Vert.invert)
+```
+
+
+- Archnids = ectotherm 
+
+- Fish = ectotherm
+
+- Reptile = ecotherm
+
+- Bird = endotherm
+
+- Mammal = endotherm
+
+Insect thermoregulation is the process whereby insects maintain body temperatures within certain boundaries. Insects have traditionally been considered as poikilotherms (animals in which body temperature is variable and dependent on ambient temperature) as opposed to being homeothermic (animals which maintain a stable internal body temperature regardless of external influences). However, the term temperature regulation, or thermoregulation, is currently used to describe the ability of insects and other animals to maintain a stable temperature (either above or below ambient temperature), at least in a portion of their bodies by physiological or behavioral means.[1] While many insects are ectotherms (animals in which their heat source is primarily from the environment), others are endotherms (animals which can produce heat internally by biochemical processes). These endothermic insects are better described as regional heterotherms because they are not uniformly endothermic. When heat is being produced, different temperatures are maintained in different parts of their bodies, for example, moths generate heat in their thorax prior to flight but the abdomen remains relatively cool.
+
+```{r echo=FALSE}
+
+forage_db$EctoEndo<-ifelse(forage_db$Major.grouping.1=="Bird" | forage_db$Major.grouping.1=="Mammal", "Endo", "Ecto" )
+#lets check
+
+table(forage_db$Major.grouping.1, forage_db$EctoEndo)
+```
+
+There is a potential issue with insects classification as ectothermic because not all insects are ectothermic and they are large share of the sample.The alternative is to go species-by-species.
+
+
+```{r echo=FALSE}
+#reduce data set to the variables we're interested in. I'll remove angiosperms and Nas.
+#forage_db$L.PredBM<-log10(forage_db$Predator.mass..mg.)
+#forage_db$L.PreyBM<-log10(forage_db$Prey.mass..mg.)
+#forage_db$L.Fitted.a..median.of.BS.samples.<-log10(forage_db$Fitted.a..median.of.BS.samples.)
+#forage_db$L.Fittted.h..day.<-log10(forage_db$Fittted.h..day.)
+
+#table(forage_db$Habitat)
+
+#Remove Angiosperms and Protozoans
+forage_db<-forage_db[forage_db$Vert.invert!="Angiosperm" & forage_db$Vert.invert!="Protozoan",]
+
+#Remove matine and freshwater
+forage_db<-forage_db[forage_db$Habitat=="Terrestrial",]
+
+
+#lets check
+table(forage_db$Major.grouping.1, forage_db$EctoEndo)
+
+#head(forage_db)
+
+
+#df<-cbind(forage_db$L.PredBM, forage_db$L.PreyBM, forage_db$Fitted.a..median.of.BS.samples., forage_db$L.Fittted.h..day., forage_db$Temp..C.., forage_db$EctoEndo)
+
+#colnames(df)<-c("LogPredBM", "LogPreyBM", "LogFittedAR", "LogFittedH_day", "Temp_c", "Ecto.Endo")
+
+#df<-as.data.frame(df)
+
+#df$Vert.invert=forage_db$Vert.invert
+#table(df$Ecto.Endo, df$Vert.invert)
+
+```
+
+
+Let's look at the relatioships and interactions:
+
+```{r echo=FALSE,fig.height=7, fig.width=10}
+
+
+panel.smoother <- function(x, y) {
+  panel.xyplot(x, y) # show points
+  panel.loess(x, y)  # show smoothed line
+}
+
+
+
+xyplot(log10(forage_db$Fittted.h..day.)~log10(forage_db$Predator.mass..mg.)|forage_db$EctoEndo,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 Predator mass, mg")
+
+xyplot(log10(forage_db$Fittted.h..day.)~log10(forage_db$Prey.mass..mg.)|forage_db$EctoEndo,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 Prey mass, mg")
+
+
+xyplot(log10(forage_db$Fittted.h..day.)~log10(forage_db$Prey.mass..mg./forage_db$Predator.mass..mg.)|forage_db$EctoEndo,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted handling time , day", xlab="Log 10 Prey/Predator mass, mg")
+
+
+xyplot(log10(forage_db$Fitted.a..median.of.BS.samples.)~log10(forage_db$Predator.mass..mg.)|forage_db$EctoEndo,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted attack rates", xlab="Log 10 Predator mass, mg")
+
+
+xyplot(log10(forage_db$Fitted.a..median.of.BS.samples.)~log10(forage_db$Prey.mass..mg.)|forage_db$EctoEndo,scales=list(cex=.8),
+   panel=panel.smoother, ylab="Log 10 Fitted attack rates", xlab="Log 10 Prey mass, mg")
+
+
+
+```
+
+Interaction with Temperature:
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Predator.mass..mg.)|Temp..C..*EctoEndo,data=forage_db,panel = panel.smooth)
+
+#coplot(log10(df_no$Fitted.a..median.of.BS.samples.) ~ log10(df_no$Prey.mass..mg.)|df_no$Temp..C..*df_no$Vert.invert, panel = panel.smooth)
+
+```
+
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg.)|Temp..C..*EctoEndo,data=forage_db,panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fittted.h..day.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..*EctoEndo,data=forage_db ,panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Predator.mass..mg.)|Temp..C..*EctoEndo,data=forage_db,panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg./Predator.mass..mg.)|Temp..C..*EctoEndo,data=forage_db,panel = panel.smooth)
+
+
+```
+
+```{r echo=FALSE,fig.height=10, fig.width=10}
+
+coplot(log10(Fitted.a..median.of.BS.samples.) ~ log10(Prey.mass..mg.)|Temp..C..*EctoEndo,data=forage_db,panel = panel.smooth)
+
+```
